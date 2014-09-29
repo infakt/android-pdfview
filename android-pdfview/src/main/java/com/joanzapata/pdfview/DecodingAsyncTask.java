@@ -22,44 +22,49 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.joanzapata.pdfview.PDFView;
-
 import org.vudroid.core.DecodeService;
 import org.vudroid.core.DecodeServiceBase;
 import org.vudroid.pdfdroid.codec.PdfContext;
 
 class DecodingAsyncTask extends AsyncTask<Void, Void, Void> {
 
-    /** The decode service used for decoding the PDF */
-    private DecodeService decodeService;
+	/**
+	 * The decode service used for decoding the PDF
+	 */
+	private DecodeService decodeService;
 
-    private boolean cancelled;
+	private boolean cancelled;
 
-    private Uri uri;
+	private Uri uri;
 
-    private PDFView pdfView;
+	private PDFView pdfView;
 
-    public DecodingAsyncTask(Uri uri, PDFView pdfView) {
-        this.cancelled = false;
-        this.pdfView = pdfView;
-        this.uri = uri;
-    }
+	public DecodingAsyncTask(Uri uri, PDFView pdfView) {
+		this.cancelled = false;
+		this.pdfView = pdfView;
+		this.uri = uri;
+	}
 
-    @Override
-    protected Void doInBackground(Void... params) {
-        decodeService = new DecodeServiceBase(new PdfContext());
-        decodeService.setContentResolver(pdfView.getContext().getContentResolver());
-        decodeService.open(uri);
-        return null;
-    }
+	@Override
+	protected Void doInBackground(Void... params) {
+		decodeService = new DecodeServiceBase(new PdfContext());
+		decodeService.setContentResolver(pdfView.getContext().getContentResolver());
+		try {
+			decodeService.open(uri);
+		} catch (Exception ex) {
+			cancel(false);
+			Log.e("PDFView", "Failed to load pdf with uri: " + uri, ex);
+		}
+		return null;
+	}
 
-    protected void onPostExecute(Void result) {
-        if (!cancelled) {
-            pdfView.loadComplete(decodeService);
-        }
-    }
+	protected void onPostExecute(Void result) {
+		if (!cancelled) {
+			pdfView.loadComplete(decodeService);
+		}
+	}
 
-    protected void onCancelled() {
-        cancelled = true;
-    }
+	protected void onCancelled() {
+		cancelled = true;
+	}
 }
