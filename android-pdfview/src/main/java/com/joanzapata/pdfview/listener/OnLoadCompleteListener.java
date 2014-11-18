@@ -29,4 +29,6 @@ public interface OnLoadCompleteListener {
      * @param nbPages the number of pages in this PDF file
      */
     void loadComplete(int nbPages);
+
+    void loadError();
 }
