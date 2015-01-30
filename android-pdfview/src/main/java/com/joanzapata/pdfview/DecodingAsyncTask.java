@@ -26,45 +26,42 @@ import org.vudroid.core.DecodeService;
 import org.vudroid.core.DecodeServiceBase;
 import org.vudroid.pdfdroid.codec.PdfContext;
 
-class DecodingAsyncTask extends AsyncTask<Void, Void, Void> {
+class DecodingAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
-	/**
-	 * The decode service used for decoding the PDF
-	 */
-	private DecodeService decodeService;
+    /**
+     * The decode service used for decoding the PDF
+     */
+    private DecodeService decodeService;
 
-	private boolean cancelled;
+    private Uri uri;
 
-	private Uri uri;
+    private PDFView pdfView;
 
-	private PDFView pdfView;
+    public DecodingAsyncTask(Uri uri, PDFView pdfView) {
+        this.pdfView = pdfView;
+        this.uri = uri;
+    }
 
-	public DecodingAsyncTask(Uri uri, PDFView pdfView) {
-		this.cancelled = false;
-		this.pdfView = pdfView;
-		this.uri = uri;
-	}
+    @Override
+    protected Boolean doInBackground(Void... params) {
+        decodeService = new DecodeServiceBase(new PdfContext());
+        decodeService.setContentResolver(pdfView.getContext().getContentResolver());
+        try {
+            decodeService.open(uri);
+            return true;
+        } catch (Exception ex) {
+            Log.e("PDFView", "Failed to load pdf with uri: " + uri, ex);
+        }
+        return false;
+    }
 
-	@Override
-	protected Void doInBackground(Void... params) {
-		decodeService = new DecodeServiceBase(new PdfContext());
-		decodeService.setContentResolver(pdfView.getContext().getContentResolver());
-		try {
-			decodeService.open(uri);
-		} catch (Exception ex) {
-			cancel(false);
-			Log.e("PDFView", "Failed to load pdf with uri: " + uri, ex);
-		}
-		return null;
-	}
+    @Override
+    protected void onPostExecute(Boolean result) {
+        if (result) {
+            pdfView.loadComplete(decodeService);
+        } else {
+            pdfView.loadError();
+        }
+    }
 
-	protected void onPostExecute(Void result) {
-		if (!cancelled) {
-			pdfView.loadComplete(decodeService);
-		}
-	}
-
-	protected void onCancelled() {
-		cancelled = true;
-	}
 }

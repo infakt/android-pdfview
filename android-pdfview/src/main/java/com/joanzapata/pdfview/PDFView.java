@@ -714,6 +714,15 @@ public class PDFView extends SurfaceView {
 		}
 	}
 
+    /**
+     * Called when there was an error
+     */
+    public void loadError() {
+        if (onLoadCompleteListener != null) {
+            onLoadCompleteListener.loadError();
+        }
+    }
+
 	/**
 	 * Called when a rendering task is over and
 	 * a PagePart has been freshly created.
@@ -1008,7 +1017,7 @@ public class PDFView extends SurfaceView {
 		return new Configurator(Uri.fromFile(file));
 	}
 
-	private enum State {DEFAULT, LOADED, SHOWN}
+    private enum State {DEFAULT, LOADED, SHOWN}
 
 	public class Configurator {
 
